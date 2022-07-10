@@ -11,14 +11,14 @@ class Dense(Layer):
         self._bias = np.random.randn(outputLayerSize, 1)
         self._trainable = True
 
-    def forward(self, input: np.array) -> np.array:
+    def forward(self, input: np.ndarray) -> np.ndarray:
         self._input = input
         return (self._weights @ input) + self._bias
     
-    def backward(self, outputGradient: np.array) -> np.array:
+    def backward(self, outputGradient: np.ndarray) -> np.ndarray:
         weightGradient = outputGradient @ self._input.T
         inputGradient = self._weights.T @ outputGradient
         self._weights = self._weights - self._alpha * weightGradient
-        self._bias = self._bias - self._alpha * np.sum(outputGradient, axis = 0)
+        self._bias = self._bias - self._alpha * np.sum(outputGradient, axis = 1, keepdims=True)
         return inputGradient
 

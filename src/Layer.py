@@ -5,8 +5,8 @@ class Layer:
         self._trainable = False
         pass
     
-    def forward(self, input : np.array) -> np.array:
+    def forward(self, input : np.ndarray) -> np.ndarray:
         pass
     
-    def backward(self, outputGradient: np.array) -> np.array:
+    def backward(self, outputGradient: np.ndarray) -> np.ndarray:
         pass

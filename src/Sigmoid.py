@@ -6,9 +6,9 @@ class Sigmoid(Layer):
         self._trainable = False
         self.input = None
 
-    def forward(self, input: np.array) -> np.array:
+    def forward(self, input: np.ndarray) -> np.ndarray:
         self.input = np.clip(1/(1+np.exp(-input)), 0.0001, 0.9999)
         return self.input
 
-    def backward(self, outputGradient: np.array) -> np.array:
+    def backward(self, outputGradient: np.ndarray) -> np.ndarray:
         return outputGradient * (self.input * (1 - self.input))
