@@ -3,7 +3,7 @@ import numpy as np
 class Sigmoid(Layer):
     
     def __init__(self) -> None:
-        self._trainable = False
+        super().__init__()
         self.input = None
 
     def forward(self, input: np.ndarray) -> np.ndarray:

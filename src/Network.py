@@ -1,8 +1,10 @@
 import numpy as np
 from Dense import Dense
+from Relu import Relu
 from Tanh import Tanh
 from Sigmoid import Sigmoid
 from Softmax import Softmax
+from Conv2d import Conv2d
 from pickle import dump, load
 class Network():
     def __init__(self, inputSize) -> None:
@@ -22,8 +24,17 @@ class Network():
     def sigmoid(self) -> 'Network':
         self._layers.append(Sigmoid())
         return self
+
     def softmax(self) -> 'Network':
         self._layers.append(Softmax())
+        return self
+
+    def Relu(self) -> 'Network':
+        self._layers.append(Relu())
+        return self
+
+    def Conv2d(self, input_shape: tuple, num_kernels: int, kernelSize: int, learning_rate: float) -> 'Network':
+        self._layers.append(Conv2d(input_shape, num_kernels, learning_rate))
         return self
 
     def predict(self, input : np.ndarray) -> np.ndarray:
@@ -32,9 +43,11 @@ class Network():
         return input
     
     def save(self, path : str) -> None:
+        self._layers.append(self._prevNumNeurons)
         with open(path, "wb") as f:
             dump(self._layers, f)
     
     def load(self, path : str) -> None:
         with open(path, "rb") as f:
             self._layers = load(f)
+        self._prevNumNeurons = self._layers.pop()
