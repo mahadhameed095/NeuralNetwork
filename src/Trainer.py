@@ -36,6 +36,7 @@ class Trainer():
         assert "epochs" in args, "Training epochs not specified."
         assert "input_shape" in args, "Input Shape not specified.."
         assert "batch_size" in args, "Batch Size not specified."
+        
 
         epochs = args["epochs"]
         batch_size = args["batch_size"]

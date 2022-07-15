@@ -5,6 +5,19 @@ import numpy as np
 import time
 from Utils import getWindows
 from Flatten import Flatten
+from h5py import File
+from pickle import dump, load
+
+np.random.seed(1)
+data = np.random.randn(2000, 100, 1000)
+# np.save("2tea", data)
+
+with open("data", "wb") as f:
+    dump(data, f)
+
+
+# with File("DataSet", 'wb') as f:
+#     f.create_dataset("weights", data=data)
 
 # from scipy.signal import correlate
 # np.random.seed(1)

@@ -13,7 +13,6 @@ class Dense(Layer):
         self._bias = None
         
     def _initLayer(self, argsDict: dict) -> dict:
-        assert "input_shape" in argsDict, "Input Shape not specified"
         inputLayerSize = argsDict["input_shape"]
         self._weights = np.random.randn(self._num_neurons, inputLayerSize)
         self._bias = np.random.randn(self._num_neurons, 1)

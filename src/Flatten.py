@@ -12,7 +12,6 @@ class Flatten(Layer):
         self._input_shape = None
     
     def _initLayer(self, argsDict: dict) -> dict:
-        assert "input_shape" in argsDict, "Input Shape not specified"
         _, _, width, height = argsDict["input_shape"]
         argsDict["input_shape"] = width * height
         return argsDict
