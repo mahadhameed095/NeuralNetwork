@@ -5,16 +5,16 @@ from Tanh import Tanh
 from Sigmoid import Sigmoid
 from Softmax import Softmax
 from Conv2d import Conv2d
+from Flatten import Flatten
 from pickle import dump, load
 class Network():
-    def __init__(self, inputSize) -> None:
+    def __init__(self) -> None:
         self._layers = []
-        self._prevNumNeurons = inputSize
+        self.init = False
 
-    def dense(self, num_neurons : int, learning_rate : float) -> 'Network':
+    def dense(self, num_neurons : int, learning_rate : float = None) -> 'Network':
         assert num_neurons > 0, "The number of neurons can not be zero or negative."
-        self._layers.append(Dense(self._prevNumNeurons, num_neurons, learning_rate))
-        self._prevNumNeurons = num_neurons
+        self._layers.append(Dense(num_neurons, learning_rate))
         return self
     
     def tanh(self) -> 'Network':
@@ -29,12 +29,18 @@ class Network():
         self._layers.append(Softmax())
         return self
 
-    def Relu(self) -> 'Network':
+    def relu(self) -> 'Network':
         self._layers.append(Relu())
         return self
 
-    def Conv2d(self, input_shape: tuple, num_kernels: int, kernelSize: int, learning_rate: float) -> 'Network':
-        self._layers.append(Conv2d(input_shape, num_kernels, learning_rate))
+    def conv2d(self, num_kernels: int, kernel_size: int, learning_rate: float = None) -> 'Network':
+        assert num_kernels > 0, "The number of kernels can not be zero or negative."
+        assert kernel_size > 0, "The size of kernel can not be zero or negative."
+        self._layers.append(Conv2d(num_kernels, kernel_size, learning_rate))
+        return self
+
+    def flatten(self):
+        self._layers.append(Flatten())
         return self
 
     def predict(self, input : np.ndarray) -> np.ndarray:

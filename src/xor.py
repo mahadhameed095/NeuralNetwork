@@ -1,21 +1,25 @@
 import numpy as np
 # from Network import Network
 # from Trainer import Trainer
-from Conv2d import Conv2d
+# from Conv2d import Conv2d
 import time
 from Utils import getWindows
+from Flatten import Flatten
 
-np.random.seed(1)
-x = np.random.randint(1, 5, (128, 3, 28, 28)).astype(np.float32)
-conv = Conv2d(x.shape, 5, 10, 0.1)
-forward = conv.forward(x)
-print(forward.shape)
-dk, db, di = conv.backward(forward)
-
-print("dk=",dk.shape)
-print("db=",db.shape)
-print("di=",di.shape)
-
+# from scipy.signal import correlate
+# np.random.seed(1)
+# x = np.random.randint(1, 5, (3, 2, 4, 4)).astype(np.float32)
+#
+# c = Conv2d(x.shape, 2, 2, 0.1)
+#
+# f = c.forward(x)
+#
+# out = correlate(x[0], c._kernels[0], 'valid')
+# out = np.squeeze(out, axis = 0).astype(np.float32)
+# print(out == f[0][0].astype(np.float32))
+#
+# print(f[0][0])
+# print(out)
 
 
 # k = np.random.randint(0, 2, (2, 3, 3))

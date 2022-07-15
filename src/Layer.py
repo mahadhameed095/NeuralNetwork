@@ -5,6 +5,9 @@ class Layer:
         self._trainable = False
         pass
     
+    def _initLayer(self, argsDict: dict) -> dict:
+        return argsDict
+
     def forward(self, input : np.ndarray) -> np.ndarray:
         pass
     

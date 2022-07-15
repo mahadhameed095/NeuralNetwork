@@ -45,7 +45,6 @@ def getWindows(input: np.ndarray, kernel_size: int, padding: int = 0, stride: in
         working_input = np.pad(working_input, pad_width=((0,), (0,), (working_pad,), (working_pad,)),
                                mode='constant',
                                constant_values=(0.,))
-
     batch_str, channel_str, kern_h_str, kern_w_str = working_input.strides
     return np.lib.stride_tricks.as_strided(
         working_input,

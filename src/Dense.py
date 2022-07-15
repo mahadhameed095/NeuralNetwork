@@ -3,14 +3,26 @@ from Layer import Layer
 
 class Dense(Layer):
     
-    def __init__(self, inputLayerSize, outputLayerSize, learning_rate) -> None:
+    def __init__(self, num_neurons : int, learning_rate : float = None) -> None:
         super().__init__()
         self._alpha = learning_rate
         self._input = None
-        self._weights = np.random.randn(outputLayerSize, inputLayerSize)
-        self._bias = np.random.randn(outputLayerSize, 1)
         self._trainable = True
-
+        self._num_neurons = num_neurons
+        self._weights = None
+        self._bias = None
+        
+    def _initLayer(self, argsDict: dict) -> dict:
+        assert "input_shape" in argsDict, "Input Shape not specified"
+        inputLayerSize = argsDict["input_shape"]
+        self._weights = np.random.randn(self._num_neurons, inputLayerSize)
+        self._bias = np.random.randn(self._num_neurons, 1)
+        if self._alpha == None:
+            assert "learning_rate" in argsDict, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in dictionary"
+            self._alpha = argsDict["learning_rate"]
+        argsDict["input_shape"] = self._num_neurons
+        return argsDict
+    
     def forward(self, input: np.ndarray) -> np.ndarray:
         self._input = input
         return (self._weights @ input) + self._bias
