@@ -40,7 +40,7 @@ paths = [
     "Datasets/MNIST/t10k-labels-idx1-ubyte"
 ]
 
-trainExamplesToUse = 500
+trainExamplesToUse = 5000
 testExamplesToUse = 10000
 
 train_x = MNIST_readImages(paths[0], trainExamplesToUse)

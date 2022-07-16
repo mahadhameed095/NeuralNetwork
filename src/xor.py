@@ -3,6 +3,7 @@ import numpy as np
 # from Trainer import Trainer
 # from Conv2d import Conv2d
 import time
+from Flatten import Flatten
 from Softmax import Softmax
 # np.save("2tea", data)
 
@@ -35,6 +36,7 @@ from Softmax import Softmax
 
 # from MeanSquaredError import MeanSquaredError
 
+
 x = np.array([[0, 0], 
               [0, 1],
               [1, 0],
@@ -44,10 +46,6 @@ y = np.array([[0],
               [1], 
               [1], 
               [0]], dtype = "float32")
-
-softie = Softmax()
-softie.forward(x)
-print(softie.backward(x))
 
 # net = Network()
 # net.dense(2, 3, 0.2).tanh().dense(3, 1, 0.2).tanh()

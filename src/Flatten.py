@@ -2,7 +2,7 @@ import numpy as np
 from Layer import Layer
 
 """
-    This Layer is meant to transform a 3 dimensional array, (K, M, N) to a 2 dimensional array of (M*N, K), and back as well.
+    This Layer is meant to transform a 4 dimensional array, (B, C, M, N) to a 2 dimensional array of (C*M*N, B), and back as well.
     It is required between a convolutional unit and a fully connected layer / dense layer.
 """
 class Flatten(Layer):
@@ -18,7 +18,7 @@ class Flatten(Layer):
 
     def forward(self, input: np.ndarray) -> np.ndarray:
         self._input_shape = input.shape
-        return input.reshape(input.shape[0], input.shape[2] * input.shape[3]).T
+        return input.reshape(input.shape[0], input.shape[1] * input.shape[2] * input.shape[3])
 
     def backward(self, outputGradient: np.ndarray) -> np.ndarray:
-        return outputGradient.T.reshape(self._input_shape[0], 1, self._input_shape[2], self._input_shape[3])
+        return outputGradient.reshape(*self._input_shape)

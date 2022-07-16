@@ -13,7 +13,7 @@ def MNIST_readImages(path: str, numToRead: int) -> np.ndarray:
         assert numToRead <= num_images, "Maximum number of images exceeded"
         f.read(8)  # skipping 2 integers
         data = np.frombuffer(f.read(784 * numToRead), dtype=np.uint8).astype(np.float32)
-        return data.reshape(numToRead, 28, 28)
+        return data.reshape(numToRead, 1, 28, 28)
 
 
 def MNIST_readLabels(path: str, numToRead: int) -> np.ndarray:
@@ -22,17 +22,18 @@ def MNIST_readLabels(path: str, numToRead: int) -> np.ndarray:
         assert magic_number == 2049, "Incorrect format file."
         num_labels = int.from_bytes(f.read(4), 'big')
         assert numToRead <= num_labels, "Maximum number of labels exceeded"
-        return np.frombuffer(f.read(numToRead), dtype=np.uint8).reshape(1, numToRead)
+        return np.frombuffer(f.read(numToRead), dtype=np.uint8).reshape(numToRead, 1)
 
 #Function for calculating the accuracy of the model.
 def calcAccuracy(forwardMat: np.ndarray, train_Y: np.ndarray):
-    preds = np.argmax(forwardMat, 0)
-    num_correct_pred = preds == np.argmax(train_Y, 0)
+    preds = np.argmax(forwardMat, 1)
+    num_correct_pred = preds == np.argmax(train_Y, 1)
     num_correct_pred = np.count_nonzero(num_correct_pred)
-    return num_correct_pred * 100 / train_Y.shape[1]
+    return (num_correct_pred) * 100 / train_Y.shape[0]
+
 
 #Reading the data
-trainExamplesToUse = 1000
+trainExamplesToUse = 2000
 testExamplesToUse = 10000
 paths = [
     "Datasets/MNIST/train-images-idx3-ubyte",
@@ -49,16 +50,12 @@ test_y = oneHotEncode(MNIST_readLabels(paths[3], testExamplesToUse), 10)
 train_x = train_x / 255
 test_x = test_x / 255
 
-
-train_x = train_x[:, np.newaxis, ...]
-test_x = test_x[:, np.newaxis, ...]
-
 # Network configuration
 net = (
-    Network(input_shape = train_x.shape, learning_rate=0.02)
-        .conv2d(num_kernels = 2, kernel_size = 5)
+    Network(input_shape = train_x.shape, learning_rate=0.03)
+        .conv2d(num_kernels = 2, kernel_size = 6)
         .relu()
-        .conv2d(num_kernels = 1, kernel_size = 5)
+        .conv2d(num_kernels = 1, kernel_size = 6)
         .relu()
         .flatten()
         .dense(num_neurons = 10)
@@ -69,13 +66,13 @@ net.print_summary()
 # Training
 trainer = Trainer(net)
 trainer.train(epochs = 100, 
-              batch_size = 32, 
+              batch_size = 64, 
               train_x = train_x, 
               train_y = train_y,
               cost = BinaryCrossEntropy(), 
               calcAccuracy= calcAccuracy)
               
-net.save("Models/MNIST(CNN)_1.npz")
+net.save("Models/MNIST(CNN)_2.npz")
 # net = Network.FromFile("Models/MNIST(CNN)_1.npz")
 # preds = np.argmax(net.predict(test_x), 0)
 print("The accuracy on the test data =>", calcAccuracy(net.predict(test_x), test_y))
