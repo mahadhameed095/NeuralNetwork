@@ -16,7 +16,7 @@ class Dense(Layer):
         inputLayerSize = argsDict["input_shape"]
         argsDict["input_shape"] = num_neurons
         self._weights = np.random.randn(num_neurons, inputLayerSize)
-        self._bias = np.random.randn(num_neurons, 1)
+        self._bias = np.random.randn(1, num_neurons)
         if learning_rate == None:
             assert argsDict["learning_rate"] is not None, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in the network constructor"
             self._alpha = argsDict["learning_rate"]
@@ -26,12 +26,20 @@ class Dense(Layer):
     
     def forward(self, input: np.ndarray) -> np.ndarray:
         self._input = input
-        return (self._weights @ input) + self._bias
+        return (input @ self._weights.T) + self._bias
     
     def backward(self, outputGradient: np.ndarray) -> np.ndarray:
-        weightGradient = outputGradient @ self._input.T
-        inputGradient = self._weights.T @ outputGradient
+        weightGradient = outputGradient.T @ self._input
+        inputGradient = outputGradient @ self._weights
         self._weights = self._weights - self._alpha * weightGradient
-        self._bias = self._bias - self._alpha * np.sum(outputGradient, axis = 1, keepdims=True)
+        self._bias = self._bias - self._alpha * np.sum(outputGradient, axis = 0, keepdims=True)
         return inputGradient
+
+"""
+Forward:
+    W x I => I x W.T
+Backward:
+    WG = O x I.T => O.T x I
+    I =  W.T x O => O x W
+"""
 

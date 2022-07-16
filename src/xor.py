@@ -3,15 +3,7 @@ import numpy as np
 # from Trainer import Trainer
 # from Conv2d import Conv2d
 import time
-from Utils import getWindows
-from Flatten import Flatten
-from h5py import File
-from pickle import dump, load
-
-data = np.load("Models/test.npz", allow_pickle=True)
-
-print(data.files)
-print(data["model_configuration"])
+from Softmax import Softmax
 # np.save("2tea", data)
 
 
@@ -43,9 +35,19 @@ print(data["model_configuration"])
 
 # from MeanSquaredError import MeanSquaredError
 
-# x = np.array([[0, 0, 0, 0], 
-#              [0, 1, 0, 1]], dtype = "float32")
-# y = np.array([[0, 1, 1, 0]], dtype = "float32")
+x = np.array([[0, 0], 
+              [0, 1],
+              [1, 0],
+              [1, 1]], dtype="float32")
+
+y = np.array([[0], 
+              [1], 
+              [1], 
+              [0]], dtype = "float32")
+
+softie = Softmax()
+softie.forward(x)
+print(softie.backward(x))
 
 # net = Network()
 # net.dense(2, 3, 0.2).tanh().dense(3, 1, 0.2).tanh()

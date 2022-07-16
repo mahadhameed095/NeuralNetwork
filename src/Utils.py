@@ -26,9 +26,9 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=
 
 
 def oneHotEncode(labelsVec: np.ndarray, num_classes: int) -> np.ndarray:
-    toRet = np.zeros((num_classes, labelsVec.shape[1]))
-    for i in range(labelsVec.shape[1]):
-        toRet[labelsVec[0, i], i] = 1
+    toRet = np.zeros((labelsVec.shape[0], num_classes))
+    for i in range(labelsVec.shape[0]):
+        toRet[i, labelsVec[i, 0]] = 1
     return toRet
 
 

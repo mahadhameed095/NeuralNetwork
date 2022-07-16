@@ -6,9 +6,9 @@ from Sigmoid import Sigmoid
 from Softmax import Softmax
 from Conv2d import Conv2d
 from Flatten import Flatten
-from pickle import dump, load
 from math import prod
 from warnings import warn
+
 class Network():
     def __init__(self, input_shape : tuple, learning_rate : float = None) -> None:
         self._layers : list = []
@@ -60,6 +60,9 @@ class Network():
     def predict(self, input : np.ndarray) -> np.ndarray:
         for layer in self._layers:
             input = layer.forward(input)
+            # if type(layer).__name__ == "Conv2d":
+            #     plt.imshow(input[5, 1])
+            #     plt.show()
         return input
     
     def save(self, path : str) -> None:

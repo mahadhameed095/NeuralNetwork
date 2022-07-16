@@ -24,6 +24,12 @@ def MNIST_readLabels(path: str, numToRead: int) -> np.ndarray:
         assert numToRead <= num_labels, "Maximum number of labels exceeded"
         return np.frombuffer(f.read(numToRead), dtype=np.uint8).reshape(1, numToRead)
 
+#Function for calculating the accuracy of the model.
+def calcAccuracy(forwardMat: np.ndarray, train_Y: np.ndarray):
+    preds = np.argmax(forwardMat, 0)
+    num_correct_pred = preds == np.argmax(train_Y, 0)
+    num_correct_pred = np.count_nonzero(num_correct_pred)
+    return num_correct_pred * 100 / train_Y.shape[1]
 
 #Reading the data
 trainExamplesToUse = 1000
@@ -49,7 +55,7 @@ test_x = test_x[:, np.newaxis, ...]
 
 # Network configuration
 net = (
-    Network(input_shape = train_x.shape, learning_rate=0.01)
+    Network(input_shape = train_x.shape, learning_rate=0.02)
         .conv2d(num_kernels = 2, kernel_size = 5)
         .relu()
         .conv2d(num_kernels = 1, kernel_size = 5)
@@ -60,27 +66,20 @@ net = (
 )
 net.print_summary()
 
-
-
-#Function for calculating the accuracy of the model.
-def calcAccuracy(forwardMat: np.ndarray, train_Y: np.ndarray):
-    preds = np.argmax(forwardMat, 0)
-    num_correct_pred = preds == np.argmax(train_Y, 0)
-    num_correct_pred = np.count_nonzero(num_correct_pred)
-    return num_correct_pred * 100 / train_Y.shape[1]
-
-#Training
+# Training
 trainer = Trainer(net)
-trainer.train(epochs = 10, 
-              batch_size = 64, 
+trainer.train(epochs = 100, 
+              batch_size = 32, 
               train_x = train_x, 
               train_y = train_y,
               cost = BinaryCrossEntropy(), 
               calcAccuracy= calcAccuracy)
+              
 net.save("Models/MNIST(CNN)_1.npz")
-preds = np.argmax(net.predict(test_x), 0)
+# net = Network.FromFile("Models/MNIST(CNN)_1.npz")
+# preds = np.argmax(net.predict(test_x), 0)
 print("The accuracy on the test data =>", calcAccuracy(net.predict(test_x), test_y))
-for i in range(int(trainExamplesToUse)):
-    plt.imshow(test_x[i].reshape(28, 28))
-    print(preds[i])
-    plt.show()
+# for i in range(int(trainExamplesToUse)):
+#     plt.imshow(test_x[i].reshape(28, 28))
+#     print(preds[i])
+#     plt.show()
