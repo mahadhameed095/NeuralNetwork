@@ -5,17 +5,15 @@ from Utils import getWindows
 
 class Conv2d(Layer):
 
-    def __init__(self, num_kernels: int, kernelSize: int, learning_rate: float = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self._trainable = True
         self._weights = None
         self._bias = None
-        self._alpha = learning_rate
-        self._cache = (num_kernels, kernelSize)
+        self._alpha = None
+        self._cache = None
 
-    def _initLayer(self, argsDict: dict) -> dict:
-        num_kernels = self._cache[0]
-        kernelSize = self._cache[1]
+    def _initLayer(self, num_kernels: int, kernelSize: int, argsDict: dict, learning_rate: float = None) -> dict:
         stride = 1
         padding = 0
         image_numbers, image_channels, image_height, image_width = argsDict["input_shape"]
@@ -23,9 +21,11 @@ class Conv2d(Layer):
                         int((image_width - kernelSize + 2 * padding) / stride) + 1)
         self._weights = np.random.randn(num_kernels, image_channels, kernelSize, kernelSize) * 1e-3
         self._bias = np.random.randn(output_shape[1], output_shape[2], output_shape[3]) * 1e-3
-        if self._alpha == None:
-            assert "learning_rate" in argsDict, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in dictionary"
+        if learning_rate == None:
+            assert argsDict["learning_rate"] is not None, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in the network constructor"
             self._alpha = argsDict["learning_rate"]
+        else:
+            self._alpha = learning_rate
         argsDict["input_shape"] = output_shape
         return argsDict
 

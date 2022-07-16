@@ -8,12 +8,11 @@ from Flatten import Flatten
 from h5py import File
 from pickle import dump, load
 
-np.random.seed(1)
-data = np.random.randn(2000, 100, 1000)
-# np.save("2tea", data)
+data = np.load("Models/test.npz", allow_pickle=True)
 
-with open("data", "wb") as f:
-    dump(data, f)
+print(data.files)
+print(data["model_configuration"])
+# np.save("2tea", data)
 
 
 # with File("DataSet", 'wb') as f:

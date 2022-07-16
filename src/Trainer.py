@@ -22,27 +22,8 @@ class Trainer():
             grad = layer.backward(grad)
         return grad
 
-
-    def _init(self, args):
-        if self._netLayers.init == True:
-            return
-        for layer in self._netLayers._layers:
-            args = layer._initLayer(args)
-        self._netLayers.init = True
-
-
-    def train(self, args, train_x : np.ndarray, train_y : np.ndarray,  cost : Error, calcAccuracy) -> None:
+    def train(self, epochs : int, batch_size : int, train_x : np.ndarray, train_y : np.ndarray,  cost : Error, calcAccuracy) -> None:
         # assert train_x.shape[1] == train_y.shape[1], "The number of samples in x and y are different."
-        assert "epochs" in args, "Training epochs not specified."
-        assert "input_shape" in args, "Input Shape not specified.."
-        assert "batch_size" in args, "Batch Size not specified."
-        
-
-        epochs = args["epochs"]
-        batch_size = args["batch_size"]
-    
-        self._init(args)
-
         steps = floor(train_x.shape[0]/batch_size)
         for i in range(epochs):
             # for (batchX, batchY) in zip(np.split(train_x, np.arange(batch_size, train_x.shape[1], batch_size), 0), np.split(train_y, np.arange(batch_size, train_y.shape[1], batch_size), 0)):

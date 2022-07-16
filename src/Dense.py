@@ -1,25 +1,27 @@
+from operator import le
 import numpy as np
 from Layer import Layer
 
 class Dense(Layer):
     
-    def __init__(self, num_neurons : int, learning_rate : float = None) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._alpha = learning_rate
+        self._alpha = None
         self._input = None
         self._trainable = True
-        self._num_neurons = num_neurons
         self._weights = None
         self._bias = None
         
-    def _initLayer(self, argsDict: dict) -> dict:
+    def _initLayer(self, num_neurons : int, argsDict: dict, learning_rate : float = None) -> dict:
         inputLayerSize = argsDict["input_shape"]
-        self._weights = np.random.randn(self._num_neurons, inputLayerSize)
-        self._bias = np.random.randn(self._num_neurons, 1)
-        if self._alpha == None:
-            assert "learning_rate" in argsDict, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in dictionary"
+        argsDict["input_shape"] = num_neurons
+        self._weights = np.random.randn(num_neurons, inputLayerSize)
+        self._bias = np.random.randn(num_neurons, 1)
+        if learning_rate == None:
+            assert argsDict["learning_rate"] is not None, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in the network constructor"
             self._alpha = argsDict["learning_rate"]
-        argsDict["input_shape"] = self._num_neurons
+        else:
+            self._alpha = learning_rate
         return argsDict
     
     def forward(self, input: np.ndarray) -> np.ndarray:

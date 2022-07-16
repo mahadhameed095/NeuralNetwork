@@ -26,7 +26,7 @@ def MNIST_readLabels(path: str, numToRead: int) -> np.ndarray:
 
 
 #Reading the data
-trainExamplesToUse = 1500
+trainExamplesToUse = 1000
 testExamplesToUse = 10000
 paths = [
     "Datasets/MNIST/train-images-idx3-ubyte",
@@ -47,17 +47,18 @@ test_x = test_x / 255
 train_x = train_x[:, np.newaxis, ...]
 test_x = test_x[:, np.newaxis, ...]
 
-#Network configuration
+# Network configuration
 net = (
-    Network()
-        .conv2d(num_kernels = 3, kernel_size = 4)
+    Network(input_shape = train_x.shape, learning_rate=0.01)
+        .conv2d(num_kernels = 2, kernel_size = 5)
         .relu()
-        .conv2d(num_kernels = 1, kernel_size = 4)
+        .conv2d(num_kernels = 1, kernel_size = 5)
         .relu()
         .flatten()
         .dense(num_neurons = 10)
         .softmax()
 )
+net.print_summary()
 
 
 
@@ -69,23 +70,17 @@ def calcAccuracy(forwardMat: np.ndarray, train_Y: np.ndarray):
     return num_correct_pred * 100 / train_Y.shape[1]
 
 #Training
-
-hyper_parameters = {
-    "input_shape" : train_x.shape,
-    "learning_rate" : 0.01,
-    "epochs" : 100,
-    "batch_size" : 32,
-}
-
 trainer = Trainer(net)
-trainer.train(hyper_parameters, train_x, train_y, BinaryCrossEntropy(), calcAccuracy)
-
-# net.load("Models/ConvMNIST2")
-# preds = np.argmax(net.predict(test_x), 0)
-
-print(calcAccuracy(net.predict(test_x), test_y))
-net.save("Models/ConvMNIST5")
-# for i in range(int(trainExamplesToUse)):
-#     plt.imshow(test_x[i].reshape(28, 28))
-#     # print(preds[i])
-#     plt.show()
+trainer.train(epochs = 10, 
+              batch_size = 64, 
+              train_x = train_x, 
+              train_y = train_y,
+              cost = BinaryCrossEntropy(), 
+              calcAccuracy= calcAccuracy)
+net.save("Models/MNIST(CNN)_1.npz")
+preds = np.argmax(net.predict(test_x), 0)
+print("The accuracy on the test data =>", calcAccuracy(net.predict(test_x), test_y))
+for i in range(int(trainExamplesToUse)):
+    plt.imshow(test_x[i].reshape(28, 28))
+    print(preds[i])
+    plt.show()
