@@ -15,7 +15,7 @@ def MNIST_readImages(path: str, numToRead: int) -> np.ndarray:
         assert numToRead <= num_images, "Maximum number of images exceeded"
         f.read(8)  # skipping 2 integers
         data = np.frombuffer(f.read(784 * numToRead), dtype=np.uint8).astype(np.float32)
-        return data.reshape(numToRead, 784) # resultant shape = (784, numToRed)
+        return data.reshape(numToRead, 784)
 
 
 def MNIST_readLabels(path: str, numToRead: int) -> np.ndarray:
@@ -48,27 +48,29 @@ train_y = oneHotEncode(MNIST_readLabels(paths[1], trainExamplesToUse), 10)
 test_x = MNIST_readImages(paths[2], testExamplesToUse)
 test_y = oneHotEncode(MNIST_readLabels(paths[3], testExamplesToUse), 10)
 
-epochs = 150
-batch_size = 32
-
 net = (
-    Network(input_shape = 784, learning_rate=0.5)
+    Network(input_shape = 784, learning_rate=0.8)
         .dense(16)
         .sigmoid()
-        .dense(16)
+        .dense(32)
         .sigmoid()
         .dense(10)
         .softmax()
 )
-
+net.print_summary()
 train_x = train_x / 255
 test_x = test_x / 255
 
 trainer = Trainer(net)
-trainer.train(epochs, batch_size, train_x, train_y, BinaryCrossEntropy(), calcAccuracy)
+trainer.train(epochs = 100, 
+              batch_size = 32, 
+              train_x = train_x, 
+              train_y = train_y, 
+              cost = BinaryCrossEntropy(), 
+              calcAccuracy = calcAccuracy)
 print("The accuracy is", calcAccuracy(net.predict(test_x), test_y))
 preds = np.argmax(net.predict(test_x), 1)
-# net.save("MNIST")
+net.save("Models/MNIST(ANN)_1.npz")
 for i in range(trainExamplesToUse):
     plt.imshow(np.reshape(test_x[i, :], (28, 28)))
     print(preds[i])

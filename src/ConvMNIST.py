@@ -53,8 +53,6 @@ test_x = test_x / 255
 # Network configuration
 net = (
     Network(input_shape = train_x.shape, learning_rate=0.03)
-        .conv2d(num_kernels = 2, kernel_size = 6)
-        .relu()
         .conv2d(num_kernels = 1, kernel_size = 6)
         .relu()
         .flatten()

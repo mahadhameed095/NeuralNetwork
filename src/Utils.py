@@ -33,7 +33,8 @@ def oneHotEncode(labelsVec: np.ndarray, num_classes: int) -> np.ndarray:
 
 
 def getWindows(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 1, dilate: bool = False):
-    working_input = input
+    dim = int(np.sqrt(input.shape[2]))
+    working_input = input.reshape(input.shape[0], input.shape[1], dim, dim)
     working_pad = padding
     # dilate the input if necessary
     if dilate:
@@ -46,9 +47,24 @@ def getWindows(input: np.ndarray, kernel_size: int, padding: int = 0, stride: in
                                mode='constant',
                                constant_values=(0.,))
     batch_str, channel_str, kern_h_str, kern_w_str = working_input.strides
-    return np.lib.stride_tricks.as_strided(
-        working_input,
-        (working_input.shape[0], working_input.shape[1], working_input.shape[2] - kernel_size + 1, working_input.shape[3] - kernel_size + 1,
-         kernel_size, kernel_size),
-        (batch_str, channel_str, stride * kern_h_str, stride * kern_w_str, kern_h_str, kern_w_str)
+    out_size =  working_input.shape[2] - kernel_size + 1
+    return (
+        np.lib.stride_tricks.as_strided(
+            working_input,
+            (working_input.shape[0], working_input.shape[1], out_size, out_size, kernel_size, kernel_size),
+            (batch_str, channel_str, stride * kern_h_str, stride * kern_w_str, kern_h_str, kern_w_str)
+        )
+        .reshape(
+            working_input.shape[0], 
+            working_input.shape[1], 
+            out_size * out_size, 
+            kernel_size * kernel_size
+        )
+        .swapaxes(2, 3)
+        .reshape(
+            working_input.shape[0], 
+            working_input.shape[1] * kernel_size * kernel_size,
+            out_size * out_size
+        )
     )
+    
