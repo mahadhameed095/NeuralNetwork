@@ -67,29 +67,42 @@ def getWindows2(input: np.ndarray, kernel_size: int, padding: int = 0, stride: i
 # print(x.reshape(-1))
 # print(np.pad(x, ((1,), (1,)), mode='constant', constant_values=(0.,)).reshape(-1))
 
-batch_size = 100
-kernel_size = 10
-channels = 3
-dim = 200
+batch_size = 1
+kernel_size = 3
+channels = 2
+dim = 5
+stride = 1
 out_size = dim - kernel_size + 1
-
-# x = np.arange(1, 33).reshape(1, 2, 16)
-# print(x)
+x = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim, dim).astype(np.float64)
+#(256, 128, 32, 8, 256, 128, 32, 8)
+print(x)
 # print(
-#     np.lib.stride_tricks.as_strided(x, (1, 2, 3, 3, 2, 2), (128, 64, 16, 4, 16, 4)).reshape(1, 2, 9, 4).swapaxes(2, 3)
+#     np.lib.stride_tricks.as_strided(
+#         x, (batch_size * channels, kernel_size, kernel_size, out_size, out_size), 
+#         strides=(16 * x.itemsize, 4 * x.itemsize, 1 * x.itemsize, 4 * x.itemsize, 1 * x.itemsize)).reshape(batch_size, -1, out_size * out_size)
+#     # np.lib.stride_tricks.as_strided(x, (1, 2, 3, 3, 2, 2), (128, 64, 16, 4, 16, 4)).reshape(1, 2, 9, 4).swapaxes(2, 3)
 # )
-x = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim * dim).astype(np.float32)
+#This version works perfect
+print(
+    np.lib.stride_tricks.sliding_window_view(x,(1, 1, out_size, out_size)).reshape(batch_size, channels * kernel_size * kernel_size, out_size * out_size)
+)
+#This doesnt work perfectly
+print(
+    np.lib.stride_tricks.as_strided(x, shape=(batch_size, channels, kernel_size, kernel_size, 1, 1, out_size, out_size), strides=(256, 128,  32, 8, 256, 128, 32, 8)).reshape(batch_size, channels * kernel_size * kernel_size, out_size * out_size)
+)
+
+# x = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim * dim).astype(np.float32)
 # print(getWindows1(x, kernel_size))
-y = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim, dim).astype(np.float32)
+# y = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim, dim).astype(np.float32)
 # print(y.shape)
 # print(x)
 # start = process_time()
 # windows = getWindows1(x, kernel_size)
 # print("Time taken ->",process_time() - start)
 
-start = process_time()
-windows = getWindows2(y, kernel_size)
-print("Time taken ->",process_time() - start)
+# start = process_time()
+# windows = getWindows2(y, kernel_size)
+# print("Time taken ->",process_time() - start)
 # [[[[ 1  2  3  4]
 #    [ 5  6  7  8]
 #    [ 9 10 11 12]
@@ -127,3 +140,5 @@ print("Time taken ->",process_time() - start)
 # trainer.train(100, x, y, MeanSquaredError())
 
 # print(net.predict(x))
+
+
