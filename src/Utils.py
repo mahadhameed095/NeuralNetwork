@@ -1,3 +1,4 @@
+from math import floor
 from time import time
 import numpy as np
 import timeit
@@ -32,39 +33,38 @@ def oneHotEncode(labelsVec: np.ndarray, num_classes: int) -> np.ndarray:
     return toRet
 
 
-def getWindows(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 1, dilate: bool = False):
-    dim = int(np.sqrt(input.shape[2]))
-    working_input = input.reshape(input.shape[0], input.shape[1], dim, dim)
-    working_pad = padding
-    # dilate the input if necessary
-    if dilate:
-        working_input = np.insert(working_input, range(1, input.shape[2]), 0, axis=2)
-        working_input = np.insert(working_input, range(1, input.shape[3]), 0, axis=3)
+def im2Col(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 1):
+    working_input = input
+    batch_size, channels, features = working_input.shape
+    dim = int(np.sqrt(features))
+    out_size = floor((dim - kernel_size)/stride + 1)
 
-    # pad the input if necessary
-    if working_pad != 0:
-        working_input = np.pad(working_input, pad_width=((0,), (0,), (working_pad,), (working_pad,)),
+    strides = (working_input.itemsize * features * channels,
+               working_input.itemsize * features,
+               working_input.itemsize * dim,
+               working_input.itemsize)
+    #dilate the input if necessary
+    """
+    if dilate:
+        working_input = np.insert(working_input, range(1, working_input.shape[2]), 0, axis=2)
+        working_input = np.insert(working_input, range(1, working_input.shape[3]), 0, axis=3)
+    
+    """
+    #pad the input if necessary
+    if padding != 0:
+        working_input = working_input.reshape(working_input.shape[0], working_input.shape[1], dim, dim)
+        working_input = np.pad(working_input, pad_width=((0,), (0,), (padding,), (padding,)),
                                mode='constant',
                                constant_values=(0.,))
-    batch_str, channel_str, kern_h_str, kern_w_str = working_input.strides
-    out_size =  working_input.shape[2] - kernel_size + 1
+
     return (
         np.lib.stride_tricks.as_strided(
-            working_input,
-            (working_input.shape[0], working_input.shape[1], out_size, out_size, kernel_size, kernel_size),
-            (batch_str, channel_str, stride * kern_h_str, stride * kern_w_str, kern_h_str, kern_w_str)
+            working_input, 
+            shape=(batch_size,channels, kernel_size, kernel_size, 1, 1, out_size, out_size), 
+            strides=(strides[0], strides[1],         strides[2],         strides[3], 
+                     strides[0], strides[1],stride * strides[2],stride * strides[3])
         )
-        .reshape(
-            working_input.shape[0], 
-            working_input.shape[1], 
-            out_size * out_size, 
-            kernel_size * kernel_size
-        )
-        .swapaxes(2, 3)
-        .reshape(
-            working_input.shape[0], 
-            working_input.shape[1] * kernel_size * kernel_size,
-            out_size * out_size
-        )
+        .reshape(batch_size, 
+                 channels * kernel_size * kernel_size, 
+                 out_size * out_size)
     )
-    
