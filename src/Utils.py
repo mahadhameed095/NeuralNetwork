@@ -37,8 +37,7 @@ def im2Col(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 
     working_input = input
     batch_size, channels, features = working_input.shape
     dim = int(np.sqrt(features))
-    out_size = floor((dim - kernel_size)/stride + 1)
-
+    out_size = floor((dim - kernel_size + 2 * padding)/stride + 1)
     strides = (working_input.itemsize * features * channels,
                working_input.itemsize * features,
                working_input.itemsize * dim,
@@ -56,11 +55,10 @@ def im2Col(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 
         working_input = np.pad(working_input, pad_width=((0,), (0,), (padding,), (padding,)),
                                mode='constant',
                                constant_values=(0.,))
-
     return (
         np.lib.stride_tricks.as_strided(
             working_input, 
-            shape=(batch_size,channels, kernel_size, kernel_size, 1, 1, out_size, out_size), 
+            shape=(batch_size, channels, kernel_size, kernel_size, 1, 1, out_size, out_size), 
             strides=(strides[0], strides[1],         strides[2],         strides[3], 
                      strides[0], strides[1],stride * strides[2],stride * strides[3])
         )

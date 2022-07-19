@@ -1,129 +1,80 @@
 import numpy as np
 # from Network import Network
 # from Trainer import Trainer
-# from Conv2d import Conv2d
+from Conv2d import Conv2d
 import time
 from Flatten import Flatten
 from Softmax import Softmax
-from time import process_time
-def getWindows1(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 1, dilate: bool = False):
-    dim = int(np.sqrt(input.shape[2]))
-    working_input = input.reshape(input.shape[0], input.shape[1], dim, dim)
-    working_pad = padding
-    # dilate the input if necessary
-    if dilate:
-        working_input = np.insert(working_input, range(1, input.shape[2]), 0, axis=2)
-        working_input = np.insert(working_input, range(1, input.shape[3]), 0, axis=3)
+from time import process_time_ns
+from Utils import im2Col
+from numpy.lib.stride_tricks import as_strided
 
-    # pad the input if necessary
-    if working_pad != 0:
-        working_input = np.pad(working_input, pad_width=((0,), (0,), (working_pad,), (working_pad,)),
-                               mode='constant',
-                               constant_values=(0.,))
-    batch_str, channel_str, kern_h_str, kern_w_str = working_input.strides
-    out_size =  working_input.shape[2] - kernel_size + 1
-    return (
-        np.lib.stride_tricks.as_strided(
-            working_input,
-            (working_input.shape[0], working_input.shape[1], out_size, out_size, kernel_size, kernel_size),
-            (batch_str, channel_str, stride * kern_h_str, stride * kern_w_str, kern_h_str, kern_w_str)
-        )
-        .reshape(
-            working_input.shape[0], 
-            working_input.shape[1], 
-            out_size * out_size, 
-            kernel_size * kernel_size
-        )
-        .swapaxes(2, 3)
-        .reshape(
-            working_input.shape[0], 
-            working_input.shape[1] * kernel_size * kernel_size,
-            out_size * out_size
-        )
-    )
-
-def getWindows2(input: np.ndarray, kernel_size: int, padding: int = 0, stride: int = 1, dilate: bool = False):
-    working_input = input
-    working_pad = padding
-    # dilate the input if necessary
-    if dilate:
-        working_input = np.insert(working_input, range(1, input.shape[2]), 0, axis=2)
-        working_input = np.insert(working_input, range(1, input.shape[3]), 0, axis=3)
-
-    # pad the input if necessary
-    if working_pad != 0:
-        working_input = np.pad(working_input, pad_width=((0,), (0,), (working_pad,), (working_pad,)),
-                               mode='constant',
-                               constant_values=(0.,))
-    batch_str, channel_str, kern_h_str, kern_w_str = working_input.strides
-    return np.lib.stride_tricks.as_strided(
-        working_input,
-        (working_input.shape[0], working_input.shape[1], working_input.shape[2] - kernel_size + 1, working_input.shape[3] - kernel_size + 1,
-         kernel_size, kernel_size),
-        (batch_str, channel_str, stride * kern_h_str, stride * kern_w_str, kern_h_str, kern_w_str)
-    )
-
-# x = np.arange(1, 10).reshape(3, 3)
-# print(x.reshape(-1))
-# print(np.pad(x, ((1,), (1,)), mode='constant', constant_values=(0.,)).reshape(-1))
-
-batch_size = 1
-kernel_size = 3
-channels = 2
-dim = 5
-stride = 1
-out_size = dim - kernel_size + 1
-x = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim, dim).astype(np.float64)
-#(256, 128, 32, 8, 256, 128, 32, 8)
-print(x)
-# print(
-#     np.lib.stride_tricks.as_strided(
-#         x, (batch_size * channels, kernel_size, kernel_size, out_size, out_size), 
-#         strides=(16 * x.itemsize, 4 * x.itemsize, 1 * x.itemsize, 4 * x.itemsize, 1 * x.itemsize)).reshape(batch_size, -1, out_size * out_size)
-#     # np.lib.stride_tricks.as_strided(x, (1, 2, 3, 3, 2, 2), (128, 64, 16, 4, 16, 4)).reshape(1, 2, 9, 4).swapaxes(2, 3)
-# )
-#This version works perfect
-print(
-    np.lib.stride_tricks.sliding_window_view(x,(1, 1, out_size, out_size)).reshape(batch_size, channels * kernel_size * kernel_size, out_size * out_size)
-)
-#This doesnt work perfectly
-print(
-    np.lib.stride_tricks.as_strided(x, shape=(batch_size, channels, kernel_size, kernel_size, 1, 1, out_size, out_size), strides=(256, 128,  32, 8, 256, 128, 32, 8)).reshape(batch_size, channels * kernel_size * kernel_size, out_size * out_size)
-)
-
+# batch_size = 256
+# kernel_size = 3
+# channels = 64
+# dim = 50
+# stride = 1
+# out_size = int((dim - kernel_size)/stride + 1)
 # x = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim * dim).astype(np.float32)
-# print(getWindows1(x, kernel_size))
-# y = np.arange(1, batch_size * channels * dim * dim + 1).reshape(batch_size, channels, dim, dim).astype(np.float32)
-# print(y.shape)
-# print(x)
-# start = process_time()
-# windows = getWindows1(x, kernel_size)
-# print("Time taken ->",process_time() - start)
+# # print(x.reshape(batch_size, channels, dim, dim))
+# start = process_time_ns()
+# im2Col(x, kernel_size, stride=stride)
+# end = process_time_ns()
+# print((end - start)/1e9)
+# view[0, 0:5] = 0
+# view = as_strided(kernels, kernels.shape, strides=tuple(reversed(kernels.strides)))
+# kernels[0, 5:10] = 0
+# print(flipped)
 
-# start = process_time()
-# windows = getWindows2(y, kernel_size)
-# print("Time taken ->",process_time() - start)
-# [[[[ 1  2  3  4]
-#    [ 5  6  7  8]
-#    [ 9 10 11 12]
-#    [13 14 15 16]]
+# kernels[0, 5:20] = 0
+# print(kernels)
+# print(flipped) 
+batch = 1
+channels = 2
+k_size = 2
+dim = 4
+num = 3
+o_size = dim - k_size + 1
+np.random.seed(1)
 
-#   [[17 18 19 20]
-#    [21 22 23 24]
-#    [25 26 27 28]
-#    [29 30 31 32]]]]
+input = np.arange(1, batch * channels * dim * dim + 1).reshape(batch, channels, dim * dim).astype(np.float32)
+print(input)
+convie = Conv2d()
+convie._initLayer(num, k_size, {"input_shape" : input.shape}, learning_rate=0.1)
+forward = convie.forward(input)
+back = convie.backward(forward)
+print(forward)
+print(back)
+
+# input = np.array(np.random.randint(1, 5, (3, 12)), order='F')
+# input[:, 0:4] = 0
+# input[:, 4:8] = 1
+# input[:, 8:12] = 2
+# view = np.reshape(input.ravel(order='F'), (3, 12), 'F')
+# input[0, 0] = 5
+# print(view)
+# print(view.flags)
+# print(input)
+# print(input.flags)
+# convie._weights = np.random.randint(1, 5, (num, channels * k_size * k_size))
+# start = process_time_ns()
+# out = convie.forward(inputArr.reshape(batch, channels, dim * dim))
+# end = process_time_ns()
+# print(end - start)
+# out = out.reshape(batch, num, o_size, o_size)
 
 
+# for i in range(batch):
+#     for j in range(num):
+#         other = correlate(inputArr[i], convie._weights.reshape(num, channels, k_size, k_size)[j], mode='valid')
+#         print(np.array_equal(out[i, j], other.squeeze()))
+# print(kernels)
+# print(out_mat)
 
+# print(np.einsum("ND, BDO -> BNO", kernels, out_mat))
 
-# strides = y.strides + y.strides
-# print(strides)
-# z = as_strided(x, shape=(3, 3, 2, 2), strides=strides)
-
-# w = as_strided(y, shape=(4, 9), strides=(16, 8))
-# from MeanSquaredError import MeanSquaredError
-
-
+# print(kernels @ out_mat[0])
+# print(kernels @ out_mat[1])
 # x = np.array([[0, 0], 
 #               [0, 1],
 #               [1, 0],
