@@ -13,7 +13,7 @@ def MNIST_readImages(path: str, numToRead: int) -> np.ndarray:
         assert numToRead <= num_images, "Maximum number of images exceeded"
         f.read(8)  # skipping 2 integers
         data = np.frombuffer(f.read(784 * numToRead), dtype=np.uint8).astype(np.float32)
-        return data.reshape(numToRead, 1, 28, 28)
+        return data.reshape(numToRead,1, 28 * 28)
 
 
 def MNIST_readLabels(path: str, numToRead: int) -> np.ndarray:
@@ -52,8 +52,8 @@ test_x = test_x / 255
 
 # Network configuration
 net = (
-    Network(input_shape = train_x.shape, learning_rate=0.03)
-        .conv2d(num_kernels = 1, kernel_size = 6)
+    Network(input_shape = train_x.shape, learning_rate=0.5)
+        .conv2d(num_kernels = 1, kernel_size=5)
         .relu()
         .flatten()
         .dense(num_neurons = 10)
@@ -64,13 +64,13 @@ net.print_summary()
 # Training
 trainer = Trainer(net)
 trainer.train(epochs = 100, 
-              batch_size = 64, 
+              batch_size = 32, 
               train_x = train_x, 
               train_y = train_y,
               cost = BinaryCrossEntropy(), 
               calcAccuracy= calcAccuracy)
               
-net.save("Models/MNIST(CNN)_2.npz")
+net.save("Models/fastCNNTest(1).npz")
 # net = Network.FromFile("Models/MNIST(CNN)_1.npz")
 # preds = np.argmax(net.predict(test_x), 0)
 print("The accuracy on the test data =>", calcAccuracy(net.predict(test_x), test_y))

@@ -24,7 +24,7 @@ class Conv2d(Layer):
         self._kernelShape = (num_kernels, image_channels, kernelSize, kernelSize)
         self._weights = np.random.randn(num_kernels, kernelSize * kernelSize * image_channels) * 1e-3
         self._kernelView = np.reshape(self._weights.ravel(), (image_channels, kernelSize * kernelSize * num_kernels), order='F')
-        self._bias = np.random.randn(output_shape[1], output_shape[2]**2) * 1e-3
+        self._bias = np.random.randn(output_shape[1], output_shape[2]) * 1e-3
         if learning_rate == None:
             assert argsDict["learning_rate"] is not None, "Learning Rate not specified. Either specify in the layer constructor, or pass as argument in the network constructor"
             self._alpha = argsDict["learning_rate"]
@@ -40,25 +40,14 @@ class Conv2d(Layer):
         return np.einsum("ND, BDO -> BNO", self._weights, self._cache) + self._bias
 
     def backward(self, outputGradient: np.ndarray) -> np.ndarray:
-        kernel_gradient = np.einsum("BNO, BOD ->ND", outputGradient, self._cache.T)
+        kernel_gradient = np.einsum("BNO, BOD ->ND", outputGradient, self._cache.swapaxes(1, 2))
         bias_gradient = np.sum(outputGradient, axis = 0)
 
-        rotatedKernel = (
-            np.hstack(
-                np.flip(
-                    np.split(
-                        np.reshape(
-                            self._weights.ravel(order='F'),
-                            (self._kernelShape[1], self._kernelShape[0], self._kernelShape[2]**2)),
-                        self._kernelShape[1],
-                    axis=1),
-                axis=2)
-            )
-        )
+        num_kernels, channels, kernel_size, _ =self._kernelShape
 
-        input_gradient = np.einsum("CD, BDO->BCO",
-                                   im2Col(outputGradient, self._weights.shape[2], self._weights.shape[2] - 1),
-                                   np.hstack(np.flip(np.split(np.reshape(self._weights.ravel(order='F').reshape(self._kernelShape)), self._kernelShape[1], axis=1), axis=2)))
+        rotatedKernel = np.flip(np.split(self._weights, channels, axis=1), axis = 2).reshape(channels, kernel_size**2 * num_kernels)
+
+        input_gradient = np.einsum("CD, BDO->BCO",rotatedKernel, im2Col(outputGradient, kernel_size, kernel_size - 1))
 
         self._weights = self._weights - self._alpha * kernel_gradient
         self._bias = self._bias - self._alpha * bias_gradient

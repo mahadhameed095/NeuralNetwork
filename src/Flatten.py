@@ -12,13 +12,13 @@ class Flatten(Layer):
         self._input_shape = None
     
     def _initLayer(self, argsDict: dict) -> dict:
-        _, _, width, height = argsDict["input_shape"]
-        argsDict["input_shape"] = width * height
+        _, _, size = argsDict["input_shape"]
+        argsDict["input_shape"] = size
         return argsDict
 
     def forward(self, input: np.ndarray) -> np.ndarray:
         self._input_shape = input.shape
-        return input.reshape(input.shape[0], input.shape[1] * input.shape[2] * input.shape[3])
+        return input.reshape(input.shape[0], input.shape[1] * input.shape[2])
 
     def backward(self, outputGradient: np.ndarray) -> np.ndarray:
         return outputGradient.reshape(*self._input_shape)
